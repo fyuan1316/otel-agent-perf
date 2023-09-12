@@ -1,0 +1,12 @@
+# Default values for test.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+pg:
+  dbName: "petclinic"
+  username: "petclinic"
+  password: "petclinic"
+agent:
+  registry: registry.alauda.cn:60080
+  image: asm/otel-java-instrumentation
+  tag: 1.24.0-v3.14.0-beta.1.gc3d98a48

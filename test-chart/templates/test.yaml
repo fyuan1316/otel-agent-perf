@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tester
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tester
+  template:
+    metadata:
+      labels:
+        app: tester
+    spec:
+      containers:
+        - name: k6
+          image: loadimpact/k6
+          # SVC=petclinic-agent 注入 agent
+          # run --env SVC=petclinic-agent -u 5 -i 200 --rps 0 --summary-export /k6-results-1.24.0.json /app/basic.js
+
+          # SVC=petclinic 未注入
+          # run --env SVC=petclinic -u 5 -i 200 --rps 0 --summary-export /k6-results-none.json /app/basic.js
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - "sleep 365d"
+          volumeMounts:
+            - name: k6-volume
+              mountPath: "/app"
+          securityContext:
+            runAsUser: 0
+      volumes:
+        - name: k6-volume
+          configMap:
+            name: tester-configmap
+            items:
+              - key: names.js
+                path: names.js
+              - key: basic.js
+                path: basic.js
+

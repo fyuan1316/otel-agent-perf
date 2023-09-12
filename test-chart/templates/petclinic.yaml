@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: petclinic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: petclinic
+  template:
+    metadata:
+      labels:
+        app: petclinic
+    spec:
+#      affinity:
+#        podAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            - labelSelector:
+#                matchExpressions:
+#                  - key: app
+#                    operator: In
+#                    values:
+#                      - petclinic-agent
+#              topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: petclinic
+          image: ghcr.io/open-telemetry/opentelemetry-java-instrumentation/petclinic-rest-base:20220711201901
+          ports:
+            - containerPort: 9966
+          env:
+            - name: spring_profiles_active
+              value: postgresql,spring-data-jpa
+            - name: spring_datasource_url
+              value: "jdbc:postgresql://postgres:5432/{{ .Values.pg.dbName }}"
+            - name: spring_datasource_username
+              value: "{{ .Values.pg.username }}"
+            - name: spring_datasource_password
+              value: "{{ .Values.pg.password }}"
+            - name: spring_jpa_hibernate_ddl-auto
+              value: none
+          volumeMounts:
+            - name: jfc-file
+              mountPath: /app/overhead.jfc
+          readinessProbe:
+            httpGet:
+              path: /petclinic/actuator/health
+              port: 9966
+          command:
+          - "java"
+          - "-Dotel.traces.exporter=otlp"
+          - "-Dotel.imr.export.interval=5000"
+          - "-Dotel.exporter.otlp.insecure=true"
+          - "-Dotel.exporter.otlp.endpoint=http://collector:4317"
+          - "-Dotel.resource.attributes=service.name=petclinic-otel-overhead"
+          - "-jar"
+          - "/app/spring-petclinic-rest.jar"
+      volumes:
+        - name: jfc-file
+          configMap:
+            name: jfc-configmap
+            items:
+              - key: overhead.jfc
+                path: overhead.jfc

@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: petclinic
+  labels:
+    app: petclinic
+spec:
+  ports:
+    - port: 9966
+      targetPort: 9966
+      protocol: TCP
+      name: http
+  selector:
+    app: petclinic
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: petclinic-agent
+  labels:
+    app: petclinic-agent
+spec:
+  ports:
+    - port: 9966
+      targetPort: 9966
+      protocol: TCP
+      name: http
+  selector:
+    app: petclinic-agent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: tcp
+  selector:
+    app: postgres
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: collector
+  labels:
+    app: otel-collector
+spec:
+  ports:
+    - port: 4317
+      targetPort: 4317
+      protocol: TCP
+      name: tcp
+  selector:
+    app: otel-collector
